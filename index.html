@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Random ball</title>
+  <style>
+    body{
+      border:0;
+      margin: 0;
+      width: 100%;
+      font-size: 16px;
+    }
+    .container{
+      /* background-color: bisque; */
+      width: 100%;
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      /* flex-direction: column; */
+    }
+    #game{
+      border:1px solid black;
+      width: 80%;
+      height: 90vh;
+      /* margin: auto; */
+      background:url('./amus-dark.png') no-repeat top right/cover;
+      position: relative;
+      cursor: url("./cursor-cup-s.png")25 25, auto;
+      overflow: hidden;
+      
+    }
+    
+    #game input{
+      width: 300px;
+      height: 100px;
+      /* 這邊換成開始圖片 想個梗 爆米花的梗 */
+      background:rgb(241, 13, 13) url('./START_BTN.png') no-repeat center/cover ;
+      position: absolute;
+      border: none;
+      border-radius: 2vh;
+      border:20px solid transparent;
+      top:50%;
+      left: 50%;
+      transform: translate(-50%,-50%);
+    }
+    .score{
+      background: url('./score.png') no-repeat center/cover;
+      width: 200px;
+      height: 100px;
+      display: inline-block;
+      position: relative;
+      padding-bottom: 15px;
+    }
+    .time{
+      background: url('./timer-1.png') no-repeat center/cover;
+      width: 200px;
+      height: 100px;
+      display: inline-block;
+      position: relative;
+      padding-bottom: 15px;
+    }
+    #score,#time{
+      font-size: 4rem;
+      color:white;
+      position: absolute;
+      top:16%;
+      left: 55%;
+    }
+    #time{
+      left: 45%;
+    }
+    
+    .ball{
+      width: 150px;
+      height: 150px;
+      position: absolute;
+      top:100%;
+      left:0;
+      transform: rotate(0deg);
+      background:url('./corn.png') no-repeat center/cover;
+    }
+    .ball1{
+      width: 60px;
+      height: 50px;
+      /* border:1px solid red; */
+      /* background-color: green; */
+      background: url('./corn-dry.png') no-repeat center/cover;
+      position: absolute;
+      top:102%;
+      left:0;
+    }
+    input{
+      margin: auto;
+      width: 100px;
+      height: 100px;
+    }
+    .num_animate_plus{
+      display: inline-block;
+      width: 80px;
+      height: 60px;
+      position: absolute;
+      top:40%;
+      left:50%;
+      font-size: 2rem;
+      background: url("./PLUS.PNG") no-repeat center/cover;
+      transform: rotate(0deg);
+      }
+    .num_animate_minus{
+      display: inline-block;
+      width: 80px;
+      height: 60px;
+      position: absolute;
+      top:40%;
+      left:50%;
+      transform: translate(-50%,-50%);
+      font-size: 2rem;
+      background: url("./MINUS.PNG") no-repeat center/cover;
+      }  
+      #startgame_animation{
+      position: absolute;
+      top:45%;
+      left: 45%;
+      font-size: 4rem;
+      animation: start 1.5s infinite linear;
+      }
+      .startanimate{
+        position: absolute;
+        top:50%;
+        left: 50%;
+        z-index: 5;
+        transform: translate(-50%,-50%);
+        width: 90px;
+        height:110px;
+        background: url('./3.png') no-repeat center/cover;
+      }
+    
+  </style>
+</head>
+<body>
+  
+  <div class="container">
+    <div id="game">
+    <!-- score and time 換成popcorn 相關的圖示 => 美化 -->
+    <!-- <div class="startanimate"></div> -->
+      <div>
+        <div class="score"><span id="score">0</span></div>
+        <div class="time"><span id="time">40</span></div>
+        <input type="button" id="btnStart">
+        <div src="./corn.png" class="ball">
+          <span class="num_animate_plus"></span>
+        </div>
+        <!-- <span class="ball1">
+          <span class="num_animate_minus">-1</span>
+        </span> -->
+      </div>
+    </div>
+  </div>
+  
+  <script src="./jquery-3.6.0.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <script type="module" src="https://unpkg.com/ionicons@5.5.2/dist/ionicons/ionicons.esm.js"></script>
+  <script nomodule src="https://unpkg.com/ionicons@5.5.2/dist/ionicons/ionicons.js"></script>
+  <script src="parabola.js"></script>
+  <script>
+    // 爆米花之歌
+    let score = 0
+    let countDown = 40
+    let timer = 0
+    let createball = ''
+    let startgame = false
+    const song = new Audio()
+    song.src="./爆米花之歌.m4a"
+    
+    $('#game').mousedown(function(){
+
+      $(this).css({
+        cursor: "url('./cursor-cup-s-r.png') 25 25, auto"
+      })
+    })
+    $('#game').mouseup(function () {
+        $(this).css({
+          cursor: "url('./cursor-cup-s.png') 25 25, auto"
+        })
+      })
+    $('#btnStart').mousemove(function () {
+        $(this).css({
+          cursor: "url('./cursor-cup-s.png') 25 25, auto"
+        })
+      })    
+    
+    // 隨機出現圓球
+    // 從 X = 0 隨機出現往上拋
+    $('#btnStart').click(function(){
+      // 一切都要從開始按鈕開始
+      // disabled晚點+
+      // $(this).attr('disabled', true)
+      // 分數與秒數重置
+      startgame = false
+      score = 0
+      countDown = 40 
+      setTimeout(() =>{
+        song.play()
+      },2500)
+      $('#score').text(score)
+      $('#time').text(countDown)
+      
+      // 移除btn
+      // $('#btnStart').remove()
+      // remove btn 出現start! 動畫再開始遊戲
+      $(this).attr('disabled', true)
+      // $('#btnStart').css({'opacity':'0'})
+      $('#game input').css({
+        // "animation": "start 1s infinite linear"
+        "opacity": "0",
+        "z-index": "-1"
+      })
+      let starttime = 2
+      $('#game').append(`<div class="startanimate"></div>`)
+      let startanimate = setInterval(() => {
+        $('#game').append(`<div class="startanimate"></div>`)
+        $('.startanimate').css({
+          background:`url('./${starttime}.png') no-repeat center / cover`
+        })
+
+        console.log(starttime);
+        starttime--
+      }, 1000);
+
+
+      $('#game').delay(2800).queue(function(){
+        $(this).dequeue()
+        $('.startanimate').remove()
+        clearInterval(startanimate)
+        // $('#game input').css({
+        //   "opacity":"0",
+        //   "animation":"none",
+        //   "z-index":"-1"
+        // })
+        // $('#game input').remove()
+        startgame = true
+        
+      })
+      // 在game區一段時間隨機生成球球
+      const move = (ball) => {
+        const top = `${Math.round(Math.random() * 90) }%`
+        const left = `${Math.round(Math.random() * 90) }%`
+        const dur = `${Math.round(Math.random() * 1000) + 2000 }`
+        ball.animate({
+          top
+        },{
+          'duration': Number(dur),
+          'queue': false,
+          'easing': 'parabola'
+        })
+        ball.animate({
+          left
+        }, {
+          'duration': Number(dur),
+          'queue': false,
+          'easing': 'linear'
+        })
+      }
+      const move1 = (ball1) => {
+        const top = `${Math.round(Math.random() * 90)}%`
+        const left = `${Math.round(Math.random() * 90)}%`
+        const dur = `${Math.round(Math.random() * 1000) + 2000}`
+        ball1.animate({
+          top
+        }, {
+          'duration': Number(dur),
+          'queue': false,
+          'easing': 'parabola'
+        })
+        ball1.animate({
+          left
+        }, {
+          'duration': Number(dur),
+          'queue': false,
+          'easing': 'linear'
+        })
+      }
+      timer = setInterval(function(){
+        if(startgame){
+          countDown--
+          $('#time').text(countDown)
+          // console.log(countDown);
+          if (countDown <= 0) {
+            clearInterval(timer)
+            clearInterval(createball)
+            $('.ball').remove()
+            $('.ball1').remove()
+            Swal.fire({
+              title: `恭喜您得到 ${score} 分`,
+              // width:600,
+              padding:'3rem',
+              imageUrl:'./popcron-1.gif',
+              imageWidth:300,
+              showConfirmButton: false,
+              // background: '#333 ',
+              timer: 4000,
+              // 遊戲區背景色 url(gif)
+              backdrop: `rgba(100,100,100,0.2)`,            
+            })
+
+            $('#btnStart').attr('disabled', false)
+            $('#btnStart').css({ 'opacity': '1',"z-index":1 })
+          }
+        }
+      },1000)
+      createball = setInterval(function(){
+        const random94 = Math.round(Math.random() * 94)
+        const random60 = Math.round(Math.random() * 60)
+        const random360 = Math.round(Math.random() * 259+101)
+        const randomball = Math.round(Math.random() * 130 + 100)
+        const randomball1 = Math.round(Math.random() * 15 + 55)
+        // console.log('rotate',rotate);
+        // 出現球的頻率也要改
+        if(startgame){
+          // width 8-28
+            const ball = $(`<div class="ball" style="left:${random94}%;width:${randomball}px;transform:rotate(${random94}deg)"></div>`)
+            $('#game').append(ball)
+            move(ball)
+            // console.log('create ball');
+            if (random94 >= 55) {
+              const ball1 = $(`<div class="ball1" style="left:${random60}%;width:${randomball1}px;transform:rotate(${random360}deg)">`)
+              $('#game').append(ball1)
+              move1(ball1)
+            }
+        }
+      },500)
+      // 移除ball
+      
+      
+    })
+    $('#game').on('click', '.ball1', function () {
+        const rotateDegree = Number((this.style.transform).slice(7, 10))
+        $(this).css({
+        "pointer-events": "none"
+        })
+        $(this).append(`<span class="num_animate_minus" style="transform:rotate(-${rotateDegree}deg)"></span>`)
+        // 延遲多久remove
+        $(this).delay(300).queue(function () {
+          $(this).remove().dequeue()
+        })
+        score--
+        $('#score').text(score)
+      })
+      $('#game').on('click', '.ball', function (e) {
+          // 在移除之前做動畫
+          const rotateDegree = Number((this.style.transform).slice(7, 9))
+          $(this).css({
+            "pointer-events":"none"
+          })
+          $(this).append(`<span class="num_animate_plus" style="transform:rotate(-${rotateDegree}deg)"></span>`)
+          console.log($('.num_animate_plus'));
+          // 延遲多久remove
+          $(this).delay(300).queue(function () {
+            $(this).remove().dequeue()
+          })
+          score++
+          // console.log(score);
+          $('#score').text(score)
+          // console.log(this);
+        })
+  </script>
+</body>
+</html>
